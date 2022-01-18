@@ -1,0 +1,30 @@
+{% extends "base_generic.html" %} {% block content %}
+
+<h1>Title: {{object.title}}</h1>
+
+<p><strong>Author:</strong> {{ object.author }}</p>
+<p><strong>Summary:</strong> {{ object.summary }}</p>
+<p>
+    <strong>Genres:</strong>
+    {% for genre in object.genres.all %} {{ genre }}{% if not forloop.last %}, {%endif%} {% endfor %}
+</p>
+<p><strong>Language:</strong> {{ object.language }}</p>
+
+<div style="margin-top: 60px">
+    <h4>Copies</h4>
+
+    {% for copy in object.bookinstance_set.all %}
+    <hr />
+    <p
+        class="{% if copy.status == 'a'%}text-success{% elif copy.status == 'o' %}text-danger{% else %}text-warning{% endif %}"
+    >
+        {{copy.get_display_status}}
+    </p>
+    <p><strong>Imprint:</strong> {{copy.imprint}}</p>
+    <p><strong>Year:</strong> {{copy.year}}</p>
+    <p class="text-muted"><strong>ID:</strong> {{copy.id}}</p>
+
+    {% endfor %}
+</div>
+
+{% endblock %}
