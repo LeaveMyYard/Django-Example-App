@@ -2,11 +2,16 @@
 <h1>Welcome to library!</h1>
 <p>Welcome to <em>LocalLibrary</em>, a web application made on Django Framework</p>
 
+{% if num_visits > 0 %}
+<p>Тут могла быть Ваша реклама</p>
+{% endif %}
+
 <h2>Dynamic data</h2>
 <ul>
     <li><strong>Books:</strong> {{ num_books }}</li>
     <li><strong>Book instances:</strong> {{ num_instances }}</li>
     <li><strong>Book instances (available):</strong> {{ num_instances_available }}</li>
     <li><strong>Authors:</strong> {{ num_authors }}</li>
+    <li><strong>You visited this page:</strong> {{ num_visits }} times</li>
 </ul>
 {% endblock %}
