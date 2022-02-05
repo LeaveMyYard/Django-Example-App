@@ -1,9 +1,12 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.views import generic
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from .models import Book, Author, BookInstance, Genre
 from .forms import ReserveBookForm
 from typing import Any
+
 
 import datetime
 
@@ -36,7 +39,17 @@ class BookListView(generic.ListView):
     #     return super().get_context_data(**kwargs) | {"book_list": Book.objects.all()}
 
 
-class BookDetailView(generic.DetailView):
+class BorrowedBookInstancesListView(LoginRequiredMixin, generic.ListView):
+    model = Book
+    context_object_name = "book_instance_list"
+    # queryset = BookInstance.objects.filter(borrower=)
+    template_name = "book_instance/list.html"
+
+    def get_queryset(self):
+        return BookInstance.objects.filter(borrower=self.request.user)
+
+
+class BookDetailView(LoginRequiredMixin, generic.DetailView):
     model = Book
     template_name = "book/detail.html"
 
@@ -66,6 +79,7 @@ def index(request):
     )
 
 
+@login_required
 def reserve_book_form(request, pk):
     book_instance = get_object_or_404(BookInstance, pk=pk)
 
@@ -76,6 +90,7 @@ def reserve_book_form(request, pk):
             # Perform action
             book_instance.status = "r"
             book_instance.due_back = form.cleaned_data["return_date"]
+            book_instance.borrower = request.user
 
             book_instance.save()
 
@@ -89,5 +104,32 @@ def reserve_book_form(request, pk):
     return render(
         request,
         "book/reserve.html",
+        {"form": form, "book_instance": book_instance},
+    )
+
+
+@permission_required("can_mark_on_loan")
+def set_book_loaned_form(request, pk):
+    book_instance = get_object_or_404(BookInstance, pk=pk)
+
+    if request.method == "POST":
+        form = ReserveBookForm(request.POST)
+
+        if form.is_valid():
+            # Perform action
+            book_instance.status = "o"
+
+            book_instance.save()
+
+            # Redirect to success url
+            return HttpResponseRedirect("/")
+
+    else:
+        proposed_return_date = datetime.date.today() + datetime.timedelta(weeks=3)
+        form = ReserveBookForm(initial={"return_date": proposed_return_date})
+
+    return render(
+        request,
+        "book/set_loaned.html",
         {"form": form, "book_instance": book_instance},
     )

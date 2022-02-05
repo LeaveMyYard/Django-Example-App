@@ -18,8 +18,12 @@
     <p
         class="{% if copy.status == 'a'%}text-success{% elif copy.status == 'o' %}text-danger{% else %}text-warning{% endif %}"
     >
-        {{copy.get_display_status}} {% if copy.status == 'a'%} -
-        <a href=" {% url 'reserve-book-form' copy.pk %} ">Reserve</a> {% endif %}
+        {{copy.get_display_status}} 
+        {% if copy.status == 'a'%} -
+            <a href=" {% url 'reserve-book-form' copy.pk %} ">Reserve</a> 
+        {% elif copy.status == 'r' and perms.catalog.can_mark_on_loan %} 
+            <a href=" {% url 'set-loaned-book-form' copy.pk %} ">Set loaned</a> 
+        {% endif %}
     </p>
     <p><strong>Imprint:</strong> {{copy.imprint}}</p>
     <p><strong>Year:</strong> {{copy.year}}</p>

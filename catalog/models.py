@@ -1,6 +1,8 @@
 from django.db import models
 import uuid
 
+from django.contrib.auth.models import User
+
 # Create your models here.
 
 
@@ -56,6 +58,13 @@ class BookInstance(models.Model):
     imprint = models.CharField(max_length=100)
     year = models.SmallIntegerField()
     book = models.ForeignKey(Book, null=False, on_delete=models.CASCADE)
+    borrower = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        permissions = [
+            ("can_mark_returned", "Set book as returned"),
+            ("can_mark_on_loan", "Set book as on loan"),
+        ]
 
     LOAN_STATUS = (
         ("o", "On loan"),
